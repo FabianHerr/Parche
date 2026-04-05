@@ -1,72 +1,96 @@
+import { supabase } from "@/app/lib/supabase";
+
+// Types mirror the PostgreSQL schema exactly.
+
 export type Event = {
-  id: number;
+  id: string;           // UUID
+  host_id: string;      // UUID → users.id
   title: string;
-  date: string;
-  location: string;
   description: string;
-  attendees: number;
-  tag: string;
-  tagColor: string;
+  location: string;
+  event_date: string;   // ISO 8601 timestamptz
+  created_at: string;
+  tag: string;          // lowercase: music | sport | social | dance | culture
+  max_attendees?: number;
 };
 
-export const events: Event[] = [
-  {
-    id: 1,
-    title: "Rooftop Sunset Sessions",
-    date: "Sat, Apr 5 · 6:00 PM",
-    location: "El Poblado, Medellín",
-    description:
-      "Golden hour vibes above the city. Join us for a curated DJ set, craft drinks, and good people as the sun dips behind the Andes. All genres welcome — house, Afrobeat, reggaeton. Bring your crew.",
-    attendees: 48,
-    tag: "Music",
-    tagColor: "bg-violet-500/20 text-violet-300",
-  },
-  {
-    id: 2,
-    title: "Night Run — Cerro Nutibara",
-    date: "Sun, Apr 6 · 5:30 AM",
-    location: "Nutibara Hill, Medellín",
-    description:
-      "Start your Sunday right. We meet at the base of Cerro Nutibara at 5:30 AM for a 6 km trail run with panoramic city views at the top. All paces welcome. Water and post-run coffee included.",
-    attendees: 27,
-    tag: "Sport",
-    tagColor: "bg-emerald-500/20 text-emerald-300",
-  },
-  {
-    id: 3,
-    title: "Open Mic & Craft Beer",
-    date: "Fri, Apr 11 · 8:00 PM",
-    location: "Laureles, Medellín",
-    description:
-      "Got a song, a poem, or a story? Grab the mic. Or just grab a beer and cheer on the brave ones. The city's most laid-back open mic returns to its favourite bar in Laureles. No sign-up needed.",
-    attendees: 63,
-    tag: "Social",
-    tagColor: "bg-amber-500/20 text-amber-300",
-  },
-  {
-    id: 4,
-    title: "Salsa Workshop — Beginners",
-    date: "Thu, Apr 10 · 7:00 PM",
-    location: "Centro, Medellín",
-    description:
-      "Never danced salsa? Perfect. This session is built for absolute beginners. Professional instructors break down the basics in a fun, no-pressure environment. Comfortable shoes recommended. Partners provided.",
-    attendees: 19,
-    tag: "Dance",
-    tagColor: "bg-rose-500/20 text-rose-300",
-  },
-  {
-    id: 5,
-    title: "Street Art Tour",
-    date: "Sat, Apr 12 · 10:00 AM",
-    location: "Comuna 13, Medellín",
-    description:
-      "Walk through one of the world's most famous urban art districts with a local guide who lived through its transformation. Learn the stories behind the murals, the artists, and the community that made it happen.",
-    attendees: 34,
-    tag: "Culture",
-    tagColor: "bg-sky-500/20 text-sky-300",
-  },
-];
+// Reflects the event_images table
+export type EventImage = {
+  id: string;
+  event_id: string;
+  image_url: string;
+  created_at: string;
+};
 
-export function getEventById(id: number): Event | undefined {
-  return events.find((e) => e.id === id);
+// What the UI uses: event row joined with event_attendee_counts view
+// and the first image from event_images.
+export type EventWithMeta = Event & {
+  attendee_count: number;
+  image_url?: string;
+};
+
+// ---------------------------------------------------------------------------
+// Queries
+// ---------------------------------------------------------------------------
+
+export async function getEventById(id: string): Promise<EventWithMeta | null> {
+  const [eventRes, countRes] = await Promise.all([
+    supabase
+      .from("events")
+      .select("*")
+      .eq("id", id)
+      .single(),
+    supabase
+      .from("event_attendee_counts")
+      .select("attendee_count")
+      .eq("event_id", id)
+      .single(),
+  ]);
+
+  if (eventRes.error) throw eventRes.error;
+  if (!eventRes.data) return null;
+
+  return {
+    ...eventRes.data,
+    attendee_count: countRes.data?.attendee_count ?? 0,
+  };
+}
+
+export async function getEvents(): Promise<EventWithMeta[]> {
+  const [eventsRes, countsRes] = await Promise.all([
+    supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: true }),
+    supabase
+      .from("event_attendee_counts")
+      .select("event_id, attendee_count"),
+  ]);
+
+  if (eventsRes.error) throw eventsRes.error;
+  if (countsRes.error) throw countsRes.error;
+
+  const countMap = new Map<string, number>(
+    countsRes.data.map((row) => [row.event_id, row.attendee_count])
+  );
+
+  return eventsRes.data.map((event) => ({
+    ...event,
+    attendee_count: countMap.get(event.id) ?? 0,
+  }));
+}
+
+export function formatEventDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  const datePart = date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+  const timePart = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return `${datePart} · ${timePart}`;
 }
