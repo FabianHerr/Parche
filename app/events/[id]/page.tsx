@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { getEventById, formatEventDate } from "@/app/lib/events";
 import { TAG_CONFIG } from "@/app/lib/tagConfig";
 import { supabase } from "@/app/lib/supabase";
 import RsvpSection from "@/app/components/RsvpSection";
+import HeroImageCarousel from "@/app/components/HeroImageCarousel";
 
 export async function generateStaticParams() {
   const { data, error } = await supabase
@@ -28,34 +28,7 @@ export default async function EventPage({
 
   return (
     <main className="flex-1 w-full">
-      {/* Hero image area */}
-      <div
-        className={`relative w-full aspect-[16/7] sm:aspect-[16/6] lg:aspect-[16/5] bg-gradient-to-br ${tag.imageBg}`}
-      >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVCbGVuZCBpbj0iU291cmNlR3JhcGhpYyIgbW9kZT0ib3ZlcmxheSIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDYiLz48L3N2Zz4=')] opacity-40" />
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-neutral-950 to-transparent" />
-
-        <div className="absolute top-4 left-4 sm:left-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-white/70 hover:text-white text-sm transition-colors bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-full"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                fillRule="evenodd"
-                d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z"
-                clipRule="evenodd"
-              />
-            </svg>
-            Back
-          </Link>
-        </div>
-      </div>
+      <HeroImageCarousel images={event.images} gradientClass={tag.imageBg} />
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12">
         {/* Tag */}

@@ -2,27 +2,26 @@ import Link from "next/link";
 import type { EventWithMeta } from "@/app/lib/events";
 import { formatEventDate } from "@/app/lib/events";
 import { TAG_CONFIG } from "@/app/lib/tagConfig";
+import CardImageCarousel from "@/app/components/CardImageCarousel";
 
 export default function EventCard({ event }: { event: EventWithMeta }) {
   const tag = TAG_CONFIG[event.tag] ?? TAG_CONFIG["social"];
+
+  const tagBadge = (
+    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${tag.color}`}>
+      {tag.label}
+    </span>
+  );
 
   return (
     <Link href={`/events/${event.id}`} className="group block">
       <article className="flex flex-col rounded-2xl bg-white/5 border border-white/8 overflow-hidden transition-all duration-300 hover:bg-white/8 hover:border-white/15 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5">
 
-        {/* Image area */}
-        <div
-          className={`relative h-36 sm:h-40 lg:h-44 bg-gradient-to-br ${tag.imageBg} flex items-end p-3 sm:p-4`}
-        >
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVCbGVuZCBpbj0iU291cmNlR3JhcGhpYyIgbW9kZT0ib3ZlcmxheSIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDYiLz48L3N2Zz4=')] opacity-40" />
-
-          {/* Tag badge */}
-          <span
-            className={`relative z-10 inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${tag.color}`}
-          >
-            {tag.label}
-          </span>
-        </div>
+        <CardImageCarousel
+          images={event.images}
+          gradientClass={tag.imageBg}
+          tagBadge={tagBadge}
+        />
 
         {/* Content */}
         <div className="flex flex-col flex-1 p-4 sm:p-5">

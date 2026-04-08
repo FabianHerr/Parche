@@ -1,5 +1,6 @@
 import Link from "next/link";
-import AuthButton from "@/app/components/AuthButton";
+import ProfileMenu from "@/app/components/ProfileMenu";
+import CreateEventButton from "@/app/components/CreateEventButton";
 
 export default function Navbar() {
   return (
@@ -44,8 +45,10 @@ export default function Navbar() {
             </svg>
           </button>
 
+          <CreateEventButton />
+
           <div className="w-px h-4 bg-white/10" />
-          <AuthButton />
+          <ProfileMenu />
         </div>
       </div>
     </header>

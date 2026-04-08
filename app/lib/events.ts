@@ -23,10 +23,10 @@ export type EventImage = {
 };
 
 // What the UI uses: event row joined with event_attendee_counts view
-// and the first image from event_images.
+// and images from event_images.
 export type EventWithMeta = Event & {
   attendee_count: number;
-  image_url?: string;
+  images: string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ export type EventWithMeta = Event & {
 // ---------------------------------------------------------------------------
 
 export async function getEventById(id: string): Promise<EventWithMeta | null> {
-  const [eventRes, countRes] = await Promise.all([
+  const [eventRes, countRes, imagesRes] = await Promise.all([
     supabase
       .from("events")
       .select("*")
@@ -45,6 +45,10 @@ export async function getEventById(id: string): Promise<EventWithMeta | null> {
       .select("attendee_count")
       .eq("event_id", id)
       .single(),
+    supabase
+      .from("event_images")
+      .select("image_url")
+      .eq("event_id", id),
   ]);
 
   if (eventRes.error) throw eventRes.error;
@@ -53,14 +57,55 @@ export async function getEventById(id: string): Promise<EventWithMeta | null> {
   return {
     ...eventRes.data,
     attendee_count: countRes.data?.attendee_count ?? 0,
+    images: (imagesRes.data ?? []).map((r) => r.image_url),
   };
 }
 
 export async function getEvents(): Promise<EventWithMeta[]> {
+  const [eventsRes, countsRes, imagesRes] = await Promise.all([
+    supabase
+      .from("events")
+      .select("*")
+      .order("event_date", { ascending: true }),
+    supabase
+      .from("event_attendee_counts")
+      .select("event_id, attendee_count"),
+    supabase
+      .from("event_images")
+      .select("event_id, image_url"),
+  ]);
+
+  if (eventsRes.error) throw eventsRes.error;
+  if (countsRes.error) throw countsRes.error;
+  if (imagesRes.error) throw imagesRes.error;
+
+  const countMap = new Map<string, number>(
+    countsRes.data.map((row) => [row.event_id, row.attendee_count])
+  );
+
+  const imageMap = new Map<string, string[]>();
+  for (const row of imagesRes.data) {
+    const existing = imageMap.get(row.event_id);
+    if (existing) {
+      existing.push(row.image_url);
+    } else {
+      imageMap.set(row.event_id, [row.image_url]);
+    }
+  }
+
+  return eventsRes.data.map((event) => ({
+    ...event,
+    attendee_count: countMap.get(event.id) ?? 0,
+    images: imageMap.get(event.id) ?? [],
+  }));
+}
+
+export async function getEventsByHost(hostId: string): Promise<EventWithMeta[]> {
   const [eventsRes, countsRes] = await Promise.all([
     supabase
       .from("events")
       .select("*")
+      .eq("host_id", hostId)
       .order("event_date", { ascending: true }),
     supabase
       .from("event_attendee_counts")
@@ -76,8 +121,34 @@ export async function getEvents(): Promise<EventWithMeta[]> {
 
   return eventsRes.data.map((event) => ({
     ...event,
+    images: [],
     attendee_count: countMap.get(event.id) ?? 0,
   }));
+}
+
+export async function deleteEvent(id: string): Promise<void> {
+  const { error } = await supabase.from("events").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export type CreateEventInput = {
+  host_id: string;
+  title: string;
+  description: string;
+  location: string;
+  event_date: string;
+  tag: string;
+};
+
+export async function createEvent(input: CreateEventInput): Promise<string> {
+  const { data, error } = await supabase
+    .from("events")
+    .insert(input)
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return data.id;
 }
 
 export function formatEventDate(isoDate: string): string {
