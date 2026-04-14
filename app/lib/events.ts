@@ -128,7 +128,10 @@ export async function getEventsByHost(hostId: string): Promise<EventWithMeta[]> 
 
 export async function deleteEvent(id: string): Promise<void> {
   const { error } = await supabase.from("events").delete().eq("id", id);
-  if (error) throw error;
+  if (error) {
+    console.error("Delete error:", error);
+    throw error;
+  }
 }
 
 export type CreateEventInput = {

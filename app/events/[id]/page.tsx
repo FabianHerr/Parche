@@ -30,7 +30,7 @@ export default async function EventPage({
     <main className="flex-1 w-full">
       <HeroImageCarousel images={event.images} gradientClass={tag.imageBg} />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12">
         {/* Tag */}
         <span
           className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mb-4 ${tag.color}`}

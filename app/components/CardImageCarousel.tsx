@@ -2,13 +2,11 @@
 
 import { useRef, useState, useCallback } from "react";
 
-const NOISE_BG =
-  "bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48ZmVCbGVuZCBpbj0iU291cmNlR3JhcGhpYyIgbW9kZT0ib3ZlcmxheSIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDYiLz48L3N2Zz4=')]";
-
 type Props = {
   images: string[];
   gradientClass: string;
-  tagBadge: React.ReactNode;
+  topLeft?: React.ReactNode;
+  bottomLeft?: React.ReactNode;
 };
 
 function ChevronLeft() {
@@ -27,7 +25,7 @@ function ChevronRight() {
   );
 }
 
-export default function CardImageCarousel({ images, gradientClass, tagBadge }: Props) {
+export default function CardImageCarousel({ images, gradientClass, topLeft, bottomLeft }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -56,9 +54,13 @@ export default function CardImageCarousel({ images, gradientClass, tagBadge }: P
   // Gradient fallback
   if (images.length === 0) {
     return (
-      <div className={`relative aspect-[3/2] bg-gradient-to-br ${gradientClass} flex items-end p-3 sm:p-4`}>
-        <div className={`absolute inset-0 ${NOISE_BG} opacity-40`} />
-        <span className="relative z-10">{tagBadge}</span>
+      <div className={`relative aspect-[3/2] bg-gradient-to-b ${gradientClass}`}>
+        {topLeft && (
+          <div className="absolute top-3 left-3 z-10">{topLeft}</div>
+        )}
+        {bottomLeft && (
+          <div className="absolute bottom-3 left-3 z-10">{bottomLeft}</div>
+        )}
       </div>
     );
   }
@@ -89,13 +91,18 @@ export default function CardImageCarousel({ images, gradientClass, tagBadge }: P
         ))}
       </div>
 
-      {/* Bottom gradient scrim */}
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+      {/* Bottom scrim for overlay readability */}
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
 
-      {/* Tag badge */}
-      <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-10">
-        {tagBadge}
-      </div>
+      {/* Top-left slot — tag badge */}
+      {topLeft && (
+        <div className="absolute top-3 left-3 z-10">{topLeft}</div>
+      )}
+
+      {/* Bottom-left slot — date */}
+      {bottomLeft && (
+        <div className="absolute bottom-3 left-3 z-10">{bottomLeft}</div>
+      )}
 
       {multi && (
         <>
@@ -105,7 +112,7 @@ export default function CardImageCarousel({ images, gradientClass, tagBadge }: P
             onClick={prev}
             aria-label="Previous image"
             disabled={atStart}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 hover:bg-black/70"
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-black/60 text-white backdrop-blur-sm transition-all duration-150 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 hover:bg-black/80"
           >
             <ChevronLeft />
           </button>
@@ -116,13 +123,13 @@ export default function CardImageCarousel({ images, gradientClass, tagBadge }: P
             onClick={next}
             aria-label="Next image"
             disabled={atEnd}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 hover:bg-black/70"
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-black/60 text-white backdrop-blur-sm transition-all duration-150 opacity-0 group-hover/carousel:opacity-100 disabled:opacity-0 hover:bg-black/80"
           >
             <ChevronRight />
           </button>
 
           {/* Dot indicators */}
-          <div className="absolute bottom-3.5 right-3 sm:bottom-4 sm:right-4 flex items-center gap-1 z-10">
+          <div className="absolute bottom-3.5 right-3 flex items-center gap-1 z-10">
             {images.map((_, i) => (
               <button
                 key={i}
@@ -132,7 +139,7 @@ export default function CardImageCarousel({ images, gradientClass, tagBadge }: P
                 className={`rounded-full transition-all duration-200 ${
                   i === activeIndex
                     ? "w-3 h-1.5 bg-white"
-                    : "w-1.5 h-1.5 bg-white/50 hover:bg-white/75"
+                    : "w-1.5 h-1.5 bg-white/40 hover:bg-white/70"
                 }`}
               />
             ))}

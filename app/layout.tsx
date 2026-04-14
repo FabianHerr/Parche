@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/app/components/Navbar";
+import { AppModeProvider } from "@/app/context/AppModeContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,9 +29,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-neutral-950 text-white">
-        <Navbar />
-        {children}
+      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-white">
+        <AppModeProvider>
+          <Navbar />
+          {children}
+        </AppModeProvider>
       </body>
     </html>
   );

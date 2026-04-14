@@ -8,6 +8,7 @@ export async function uploadEventImages(
   const urls = await Promise.all(
     files.map(async (file) => {
       const path = `${eventId}/${Date.now()}-${file.name}`;
+      console.log("Uploading image:", path);
 
       const { error: uploadError } = await supabase.storage
         .from("event-images")
@@ -15,7 +16,9 @@ export async function uploadEventImages(
 
       if (uploadError) throw uploadError;
 
-      return supabase.storage.from("event-images").getPublicUrl(path).data.publicUrl;
+      const url = supabase.storage.from("event-images").getPublicUrl(path).data.publicUrl;
+      console.log("Public URL:", url);
+      return url;
     })
   );
 

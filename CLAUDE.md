@@ -1,1 +1,1 @@
-@AGENTS.md
+/Users/faviandavidherrerapena/repos/parche-app/obsidian-vault/parche-app-second-brain/CLAUDE.md

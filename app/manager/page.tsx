@@ -1,155 +1,123 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/app/lib/supabase";
-import { getEventsByHost, deleteEvent, formatEventDate, type EventWithMeta } from "@/app/lib/events";
 
-export default function ManagerPage() {
-  const router = useRouter();
-  const [events, setEvents] = useState<EventWithMeta[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+const ACTIONS = [
+  {
+    href: "/manager/create",
+    label: "Create Event",
+    description: "Share something new with Montreal. Add photos, pick a category, and publish in minutes.",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <path fillRule="evenodd" d="M12 3.75a.75.75 0 01.75.75v6.75h6.75a.75.75 0 010 1.5h-6.75v6.75a.75.75 0 01-1.5 0v-6.75H4.5a.75.75 0 010-1.5h6.75V4.5a.75.75 0 01.75-.75z" clipRule="evenodd" />
+      </svg>
+    ),
+    gradient: "from-violet-500/20 via-violet-500/5 to-transparent",
+    border: "border-violet-500/20 hover:border-violet-500/40",
+    iconBg: "bg-violet-500/15 text-violet-300",
+    cta: "Create now →",
+  },
+  {
+    href: "/manager/events",
+    label: "My Events",
+    description: "View, edit, and manage everything you've published. Track attendance and make updates.",
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3A.75.75 0 0118 3v1.5h.75a3 3 0 013 3v11.25a3 3 0 01-3 3H5.25a3 3 0 01-3-3V7.5a3 3 0 013-3H6V3a.75.75 0 01.75-.75zm13.5 9a1.5 1.5 0 00-1.5-1.5H5.25a1.5 1.5 0 00-1.5 1.5v7.5a1.5 1.5 0 001.5 1.5h13.5a1.5 1.5 0 001.5-1.5v-7.5z" clipRule="evenodd" />
+      </svg>
+    ),
+    gradient: "from-sky-500/20 via-sky-500/5 to-transparent",
+    border: "border-sky-500/20 hover:border-sky-500/40",
+    iconBg: "bg-sky-500/15 text-sky-300",
+    cta: "View all →",
+  },
+];
 
-  const load = useCallback(async (hostId: string) => {
-    try {
-      const data = await getEventsByHost(hostId);
-      setEvents(data);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : (err as { message?: string })?.message ?? "Failed to load events.";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+const TIPS = [
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 mt-0.5 text-neutral-500">
+        <path fillRule="evenodd" d="M1 5.25A2.25 2.25 0 013.25 3h13.5A2.25 2.25 0 0119 5.25v9.5A2.25 2.25 0 0116.75 17H3.25A2.25 2.25 0 011 14.75v-9.5zm1.5 5.81v3.69c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75v-2.69l-2.22-2.219a.75.75 0 00-1.06 0l-1.91 1.909.47.47a.75.75 0 11-1.06 1.06L6.53 8.091a.75.75 0 00-1.06 0l-2.97 2.97zM12 7a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+      </svg>
+    ),
+    text: "Add photos — events with images get significantly more attendance.",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 mt-0.5 text-neutral-500">
+        <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 15.327 17 13.4 17 10c0-3.866-3.134-7-7-7S3 6.134 3 10c0 3.4 1.698 5.327 3.354 6.584.829.8 1.654 1.381 2.274 1.765a10.63 10.63 0 00.757.433 5.741 5.741 0 00.281.14l.018.008.006.003zM10 11.25a1.25 1.25 0 100-2.5 1.25 1.25 0 000 2.5z" clipRule="evenodd" />
+      </svg>
+    ),
+    text: "Pick the right category so the right crowd discovers your event.",
+  },
+  {
+    icon: (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 mt-0.5 text-neutral-500">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+      </svg>
+    ),
+    text: "Write a clear description: what to expect, who it's for, and what makes it special.",
+  },
+];
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        router.replace("/login");
-      } else {
-        load(data.user.id);
-      }
-    });
-  }, [router, load]);
-
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this event? This cannot be undone.")) return;
-    setDeletingId(id);
-    try {
-      await deleteEvent(id);
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : (err as { message?: string })?.message ?? "Delete failed.";
-      setError(message);
-    } finally {
-      setDeletingId(null);
-    }
-  }
-
+export default function ManagerHomePage() {
   return (
-    <main className="flex-1 w-full">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <div className="w-full">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <p className="text-xs font-semibold tracking-widest text-neutral-500 uppercase mb-1">
-              Manager Mode
-            </p>
-            <h1 className="text-3xl font-bold text-white tracking-tight">My Events</h1>
-          </div>
-          <Link
-            href="/create"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-black text-sm font-semibold hover:bg-neutral-100 transition-colors"
-          >
-            <span className="text-base leading-none">+</span>
-            Create Event
-          </Link>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5 mb-6">
-            {error}
-          </p>
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div className="flex flex-col gap-3">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-20 rounded-2xl bg-white/5 animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {!loading && events.length === 0 && !error && (
-          <div className="text-center py-20">
-            <p className="text-neutral-500 text-sm mb-4">No events yet.</p>
-            <Link
-              href="/create"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white/8 border border-white/10 text-white text-sm font-medium hover:bg-white/15 transition-colors"
-            >
-              Create your first event
-            </Link>
-          </div>
-        )}
-
-        {/* Event list */}
-        {!loading && events.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center gap-4 rounded-2xl bg-white/5 border border-white/8 px-5 py-4 hover:bg-white/7 transition-colors"
-              >
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="text-white font-semibold text-sm leading-snug hover:text-neutral-200 transition-colors line-clamp-1"
-                  >
-                    {event.title}
-                  </Link>
-                  <p className="text-neutral-500 text-xs mt-1">
-                    {formatEventDate(event.event_date)}
-                  </p>
-                </div>
-
-                {/* Attendee count */}
-                <div className="flex items-center gap-1.5 shrink-0 text-neutral-500 text-xs">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" />
-                  </svg>
-                  <span className="tabular-nums">{event.attendee_count}</span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <Link
-                    href={`/events/${event.id}/edit`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-400 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-white transition-colors"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    disabled={deletingId === event.id}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/8 border border-red-500/15 hover:bg-red-500/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {deletingId === event.id ? "Deleting…" : "Delete"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
+      {/* Header */}
+      <div className="mb-10 sm:mb-12">
+        <p className="text-xs font-semibold tracking-widest text-neutral-500 uppercase mb-2">
+          Manager Mode
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          Welcome back
+        </h1>
+        <p className="text-neutral-400 text-sm mt-2">
+          Create and manage your events in Montreal.
+        </p>
       </div>
-    </main>
+
+      {/* Action cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12 sm:mb-14">
+        {ACTIONS.map(({ href, label, description, icon, gradient, border, iconBg, cta }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`group relative flex flex-col gap-6 rounded-2xl bg-gradient-to-br ${gradient} border ${border} p-8 overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20`}
+          >
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
+              {icon}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-white font-semibold text-lg leading-snug">{label}</p>
+              <p className="text-neutral-400 text-sm leading-relaxed">{description}</p>
+            </div>
+            <span className="text-xs font-semibold text-neutral-500 group-hover:text-neutral-200 transition-colors">
+              {cta}
+            </span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-white/8 mb-10 sm:mb-12" />
+
+      {/* Tips */}
+      <div>
+        <p className="text-xs font-semibold tracking-widest text-neutral-500 uppercase mb-5">
+          Tips for better events
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {TIPS.map(({ icon, text }) => (
+            <div
+              key={text}
+              className="flex flex-col gap-3 rounded-xl bg-white/4 border border-white/8 px-5 py-4"
+            >
+              {icon}
+              <p className="text-neutral-400 text-xs leading-relaxed">{text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
   );
 }

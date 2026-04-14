@@ -32,14 +32,14 @@ export async function updateProfile(
 }
 
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
-  const ext = file.name.split(".").pop();
-  const path = `${userId}/avatar.${ext}`;
+  const path = `${userId}/avatar.jpg`;
 
   const { error: uploadError } = await supabase.storage
-    .from("user-avatars")
-    .upload(path, file, { upsert: true });
+    .from("avatars")
+    .upload(path, file, { upsert: true, contentType: "image/jpeg" });
 
   if (uploadError) throw uploadError;
 
-  return supabase.storage.from("user-avatars").getPublicUrl(path).data.publicUrl;
+  const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+  return data.publicUrl;
 }

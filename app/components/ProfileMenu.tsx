@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
-import { useAppMode } from "@/app/hooks/useAppMode";
+import { useAppMode } from "@/app/context/AppModeContext";
 
 export default function ProfileMenu() {
   const router = useRouter();

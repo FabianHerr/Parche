@@ -8,34 +8,36 @@ export default function EventCard({ event }: { event: EventWithMeta }) {
   const tag = TAG_CONFIG[event.tag] ?? TAG_CONFIG["social"];
 
   const tagBadge = (
-    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${tag.color}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm ${tag.color}`}>
       {tag.label}
+    </span>
+  );
+
+  const dateLabel = (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-white/80 text-xs font-medium">
+      {formatEventDate(event.event_date)}
     </span>
   );
 
   return (
     <Link href={`/events/${event.id}`} className="group block">
-      <article className="flex flex-col rounded-2xl bg-white/5 border border-white/8 overflow-hidden transition-all duration-300 hover:bg-white/8 hover:border-white/15 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5">
+      <article className="flex flex-col rounded-xl bg-[#111111] border border-white/[0.06] overflow-hidden transition-all duration-150 hover:border-white/[0.12] hover:scale-[1.01] hover:shadow-xl hover:shadow-black/60">
 
         <CardImageCarousel
           images={event.images}
           gradientClass={tag.imageBg}
-          tagBadge={tagBadge}
+          topLeft={tagBadge}
+          bottomLeft={dateLabel}
         />
 
-        {/* Content */}
-        <div className="flex flex-col flex-1 p-4 sm:p-5">
-          <p className="text-neutral-500 text-xs mb-2">{formatEventDate(event.event_date)}</p>
-
-          <h2 className="text-white font-semibold text-base sm:text-lg lg:text-[1.05rem] leading-snug mb-3 group-hover:text-neutral-100 transition-colors line-clamp-2">
+        {/* Card body */}
+        <div className="p-4">
+          <h2 className="text-white font-semibold text-sm leading-snug mb-3 line-clamp-2">
             {event.title}
           </h2>
 
-          <div className="flex-1" />
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-3 border-t border-white/6">
-            <div className="flex items-center gap-1.5 text-neutral-500 text-xs min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 text-white/45 text-xs min-w-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -51,16 +53,16 @@ export default function EventCard({ event }: { event: EventWithMeta }) {
               <span className="truncate">{event.location}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0 ml-2">
-              <div className="flex -space-x-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex -space-x-1">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-4.5 h-4.5 rounded-full bg-neutral-700 border border-neutral-900"
+                    className="w-4 h-4 rounded-full bg-white/10 border border-[#111111]"
                   />
                 ))}
               </div>
-              <span className="text-neutral-500 text-xs tabular-nums">
+              <span className="text-white/45 text-xs tabular-nums">
                 {event.attendee_count}
               </span>
             </div>
