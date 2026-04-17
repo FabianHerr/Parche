@@ -1,4 +1,4 @@
-import type { EventWithMeta } from "@/app/lib/events";
+import type { EventWithMeta } from "@/app/lib/db/events";
 import { TAG_CONFIG, ALL_TAGS } from "@/app/lib/tagConfig";
 
 const TAG_DOTS: Record<string, string> = {

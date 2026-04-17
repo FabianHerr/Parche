@@ -1,5 +1,33 @@
 import { supabase } from "@/app/lib/supabase";
 
+export async function deleteEventImages(imageUrls: string[]): Promise<void> {
+  if (imageUrls.length === 0) return;
+
+  const bucketPrefix = "/storage/v1/object/public/event-images/";
+  const paths = imageUrls.map((url) => {
+    const idx = url.indexOf(bucketPrefix);
+    if (idx === -1) throw new Error(`Unrecognised image URL: ${url}`);
+    return url.slice(idx + bucketPrefix.length);
+  });
+
+  const { error: storageError } = await supabase.storage
+    .from("event-images")
+    .remove(paths);
+  if (storageError) {
+    console.error("[delete-event-images] storage error:", storageError);
+    throw storageError;
+  }
+
+  const { error: dbError } = await supabase
+    .from("event_images")
+    .delete()
+    .in("image_url", imageUrls);
+  if (dbError) {
+    console.error("[delete-event-images] db error:", dbError);
+    throw dbError;
+  }
+}
+
 export async function uploadEventImages(
   eventId: string,
   files: File[]

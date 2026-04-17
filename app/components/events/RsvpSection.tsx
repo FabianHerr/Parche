@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/app/lib/supabase";
-import { toggleRSVP, getAttendeeCount, getUserRSVP, type RsvpStatus } from "@/app/lib/rsvps";
+import { toggleRSVP, getAttendeeCount, getUserRSVP, type RsvpStatus } from "@/app/lib/db/rsvps";
 
 export default function RsvpSection({
   eventId,

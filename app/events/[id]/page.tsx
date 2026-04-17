@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { getEventById, formatEventDate } from "@/app/lib/events";
+import { getEventById, formatEventDate } from "@/app/lib/db/events";
 import { TAG_CONFIG } from "@/app/lib/tagConfig";
 import { supabase } from "@/app/lib/supabase";
-import RsvpSection from "@/app/components/RsvpSection";
-import HeroImageCarousel from "@/app/components/HeroImageCarousel";
+import RsvpSection from "@/app/components/events/RsvpSection";
+import HeroImageCarousel from "@/app/components/events/HeroImageCarousel";
 
 export async function generateStaticParams() {
   const { data, error } = await supabase

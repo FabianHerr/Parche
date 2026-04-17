@@ -1,5 +1,5 @@
-import type { EventWithMeta } from "@/app/lib/events";
-import EventCard from "@/app/components/EventCard";
+import type { EventWithMeta } from "@/app/lib/db/events";
+import EventCard from "@/app/components/events/EventCard";
 
 export default function EventList({ events }: { events: EventWithMeta[] }) {
   return (

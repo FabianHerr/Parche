@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
-import { getProfile, updateProfile, uploadAvatar, type UserProfile } from "@/app/lib/profile";
+import { getProfile, updateProfile, uploadAvatar, type UserProfile } from "@/app/lib/db/profile";
 
 export default function SettingsPage() {
   const router = useRouter();

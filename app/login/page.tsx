@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
-import { ensureUserRecord } from "@/app/lib/auth";
+import { ensureUserRecord } from "@/app/lib/db/auth";
 
 type Mode = "signin" | "signup";
 

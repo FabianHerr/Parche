@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
-import { getEventsByHost, deleteEvent, formatEventDate, type EventWithMeta } from "@/app/lib/events";
+import { getEventsByHost, deleteEvent, formatEventDate, type EventWithMeta } from "@/app/lib/db/events";
 import { TAG_CONFIG } from "@/app/lib/tagConfig";
+import CardImageCarousel from "@/app/components/events/CardImageCarousel";
 
 export default function ManagerEventsPage() {
   const router = useRouter();
@@ -55,24 +56,13 @@ export default function ManagerEventsPage() {
     <div className="w-full">
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-8 sm:mb-10">
-        <div>
-          <p className="text-xs font-medium tracking-widest text-white/30 uppercase mb-1.5">
-            Manager Mode
-          </p>
-          <h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
-            My Events
-          </h1>
-        </div>
-        <Link
-          href="/manager/create"
-          className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs font-medium hover:bg-orange-500/15 hover:border-orange-500/30 hover:text-orange-200 transition-all duration-150"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-            <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-          </svg>
-          <span className="hidden sm:inline">Create Event</span>
-        </Link>
+      <div className="mb-8 sm:mb-10">
+        <p className="text-xs font-medium tracking-widest text-white/30 uppercase mb-1.5">
+          Manager Mode
+        </p>
+        <h1 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
+          My Events
+        </h1>
       </div>
 
       {/* Error */}
@@ -126,27 +116,18 @@ export default function ManagerEventsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {events.map((event) => {
             const tag = TAG_CONFIG[event.tag] ?? TAG_CONFIG["social"];
-            const image = event.images?.[0];
 
             return (
               <div
                 key={event.id}
                 className="group flex flex-col rounded-xl bg-[#111111] border border-white/[0.06] overflow-hidden hover:border-white/[0.12] hover:scale-[1.01] transition-all duration-150"
               >
-                {/* Image / gradient area */}
+                {/* Image carousel / gradient area */}
                 <div className="relative aspect-[3/2] overflow-hidden">
-                  {image ? (
-                    <img
-                      src={image}
-                      alt={event.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className={`w-full h-full bg-gradient-to-b ${tag.imageBg}`} />
-                  )}
-
-                  {/* Scrim for overlay readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                  <CardImageCarousel
+                    images={event.images}
+                    gradientClass={tag.imageBg}
+                  />
 
                   {/* Tag badge — top left */}
                   <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-full text-xs font-medium backdrop-blur-sm ${tag.color}`}>
@@ -156,7 +137,7 @@ export default function ManagerEventsPage() {
                   {/* Edit + Delete — top right, revealed on hover */}
                   <div className="absolute top-3 right-3 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                     <Link
-                      href={`/events/${event.id}/edit`}
+                      href={`/manager/events/${event.id}/edit`}
                       title="Edit event"
                       className="w-8 h-8 rounded-lg bg-black/60 backdrop-blur-sm flex items-center justify-center text-neutral-300 hover:text-white hover:bg-black/80 transition-colors"
                     >
@@ -183,13 +164,6 @@ export default function ManagerEventsPage() {
                     </button>
                   </div>
 
-                  {/* Attendee count — bottom right of image */}
-                  <div className="absolute bottom-3 right-3 flex items-center gap-1 text-white text-xs font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 opacity-80">
-                      <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zM1.49 15.326a.78.78 0 01-.358-.442 3 3 0 014.308-3.516 6.484 6.484 0 00-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 01-2.07-.655zM16.44 15.98a4.97 4.97 0 002.07-.654.78.78 0 00.357-.442 3 3 0 00-4.308-3.517 6.484 6.484 0 011.907 3.96 2.32 2.32 0 01-.026.654zM18 8a2 2 0 11-4 0 2 2 0 014 0zM5.304 16.19a.844.844 0 01-.277-.71 5 5 0 019.947 0 .843.843 0 01-.277.71A6.975 6.975 0 0110 18a6.974 6.974 0 01-4.696-1.81z" />
-                    </svg>
-                    <span className="tabular-nums">{event.attendee_count}</span>
-                  </div>
                 </div>
 
                 {/* Card body */}
@@ -208,11 +182,21 @@ export default function ManagerEventsPage() {
                       </svg>
                       <span className="truncate">{formatEventDate(event.event_date)}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-white/45 text-xs">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
-                        <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.387 1.445-.96 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.977.545l.025.012.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
-                      </svg>
-                      <span className="truncate">{event.location}</span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 text-white/45 text-xs min-w-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
+                          <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.387 1.445-.96 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.977.545l.025.012.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" clipRule="evenodd" />
+                        </svg>
+                        <span className="truncate">{event.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex -space-x-1">
+                          {[0, 1, 2].map((i) => (
+                            <div key={i} className="w-4 h-4 rounded-full bg-white/10 border border-[#111111]" />
+                          ))}
+                        </div>
+                        <span className="text-white/45 text-xs tabular-nums">{event.attendee_count}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

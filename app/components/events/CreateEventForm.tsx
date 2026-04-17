@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
-import { createEvent } from "@/app/lib/events";
-import { uploadEventImages } from "@/app/lib/images";
+import { createEvent } from "@/app/lib/db/events";
+import { uploadEventImages } from "@/app/lib/db/images";
 import { TAG_CONFIG, ALL_TAGS } from "@/app/lib/tagConfig";
 
 type FormState = {
@@ -131,7 +131,7 @@ export default function CreateEventForm() {
     "w-full rounded-lg bg-[#111111] border border-white/[0.08] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-orange-500/50 focus:ring-0 transition-colors duration-150";
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-4xl mx-auto">
 
       {/* Header */}
       <div className="mb-10">

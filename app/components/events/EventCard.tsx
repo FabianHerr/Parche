@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { EventWithMeta } from "@/app/lib/events";
-import { formatEventDate } from "@/app/lib/events";
+import type { EventWithMeta } from "@/app/lib/db/events";
+import { formatEventDate } from "@/app/lib/db/events";
 import { TAG_CONFIG } from "@/app/lib/tagConfig";
-import CardImageCarousel from "@/app/components/CardImageCarousel";
+import CardImageCarousel from "@/app/components/events/CardImageCarousel";
 
 export default function EventCard({ event }: { event: EventWithMeta }) {
   const tag = TAG_CONFIG[event.tag] ?? TAG_CONFIG["social"];

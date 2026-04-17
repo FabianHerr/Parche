@@ -1,12 +1,16 @@
-import NavLogo from "@/app/components/NavLogo";
-import ProfileMenu from "@/app/components/ProfileMenu";
-import CreateEventButton from "@/app/components/CreateEventButton";
+import NavLogo from "@/app/components/layout/NavLogo";
+import ManagerDrawer from "@/app/components/layout/ManagerDrawer";
+import ProfileMenu from "@/app/components/ui/ProfileMenu";
+import CreateEventButton from "@/app/components/ui/CreateEventButton";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/8 bg-neutral-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-white/8 bg-[#111111] sm:bg-neutral-950/80 sm:backdrop-blur-md">
       <div className="w-full h-14 px-4 sm:px-5 lg:px-8 flex items-center justify-between">
-        <NavLogo />
+        <div className="flex items-center gap-2">
+          <ManagerDrawer />
+          <NavLogo />
+        </div>
 
         <div className="flex items-center gap-3">
           <button className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 transition-colors">

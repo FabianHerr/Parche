@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import ManagerSidebar from "@/app/components/ManagerSidebar";
+import ManagerSidebar from "@/app/components/layout/ManagerSidebar";
 
 export default function ManagerLayout({ children }: { children: ReactNode }) {
   return (

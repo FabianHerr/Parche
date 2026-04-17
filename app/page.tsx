@@ -1,6 +1,6 @@
-import { getEvents } from "@/app/lib/events";
-import EventList from "@/app/components/EventList";
-import Sidebar from "@/app/components/Sidebar";
+import { getEvents } from "@/app/lib/db/events";
+import EventList from "@/app/components/events/EventList";
+import Sidebar from "@/app/components/layout/Sidebar";
 import { TAG_CONFIG, ALL_TAGS } from "@/app/lib/tagConfig";
 
 const TAG_DOTS: Record<string, string> = {
